@@ -6,10 +6,13 @@
 
 #include "rtweekend.h"
 
+class material;
+
 class hit_record {
 public:
     point3 point;
     vec3 normal;
+    std::shared_ptr<material> material;
     double t;
     bool front_face;
 

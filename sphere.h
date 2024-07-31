@@ -8,9 +8,10 @@
 
 class sphere : public hittable {
 public:
-    sphere(const point3& center, double radius)
+    sphere(const point3& center, double radius, std::shared_ptr<material> material)
         : center(center)
-        , radius(std::fmax(0.0, radius)) { }
+        , radius(std::fmax(0.0, radius))
+        , material(material) { }
 
     auto hit(const ray& ray, interval ray_t, hit_record& rec) const -> bool override {
         const vec3 oc = center - ray.origin();
@@ -38,6 +39,7 @@ public:
         rec.normal = (rec.point - center) / radius;
         const vec3 outward_normal = (rec.point - center) / radius;
         rec.set_face_normal(ray, outward_normal);
+        rec.material = material;
 
         return true;
     }
@@ -45,4 +47,5 @@ public:
 private:
     point3 center;
     double radius;
+    std::shared_ptr<material> material;
 };

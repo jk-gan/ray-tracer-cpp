@@ -39,6 +39,10 @@ public:
 
     [[nodiscard]] auto length() const -> double { return std::sqrt(length_squared()); }
     [[nodiscard]] auto length_squared() const -> double { return e[0] * e[0] + e[1] * e[1] + e[2] * e[2]; }
+    [[nodiscard]] auto near_zero() const -> bool {
+        auto s = 1e-8;
+        return (std::fabs(e[0]) < s) && (std::fabs(e[1]) < s) && (std::fabs(e[2]) < s);
+    }
     static auto random() -> vec3 { return { random_double(), random_double(), random_double() }; }
     static auto random(double min, double max) -> vec3 {
         return { random_double(min, max), random_double(min, max), random_double(min, max) };
@@ -73,6 +77,15 @@ inline auto cross(const vec3& u, const vec3& v) -> vec3 {
 
 inline auto unit_vector(const vec3& v) -> vec3 { return v / v.length(); }
 
+inline auto random_in_unit_disk() -> vec3 {
+    while (true) {
+        auto p = vec3 { random_double(-1.0, 1.0), random_double(-1.0, 1.0), 0.0 };
+        if (p.length_squared() < 1.0) {
+            return p;
+        }
+    }
+}
+
 inline auto random_in_unit_sphere() -> vec3 {
     while (true) {
         auto p = vec3::random(-1.0, 1.0);
@@ -88,4 +101,13 @@ inline auto random_on_hemisphere(const vec3& normal) -> vec3 {
     vec3 on_unit_sphere = random_unit_vector();
     // if the dot product is > 0.0, mean it is in the same hemisphere as the normal
     return dot(on_unit_sphere, normal) > 0.0 ? on_unit_sphere : -on_unit_sphere;
+}
+
+inline auto reflect(const vec3& v, const vec3& n) -> vec3 { return v - 2 * dot(v, n) * n; }
+
+inline auto refract(const vec3& uv, const vec3& n, double etai_over_etat) -> vec3 {
+    auto cos_theta = std::fmin(dot(-uv, n), 1.0);
+    vec3 r_out_perp = etai_over_etat * (uv + cos_theta * n);
+    vec3 r_out_parallel = -std::sqrt(std::fabs(1.0 - r_out_perp.length_squared())) * n;
+    return r_out_perp + r_out_parallel;
 }
